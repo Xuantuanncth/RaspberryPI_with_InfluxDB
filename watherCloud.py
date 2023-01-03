@@ -13,7 +13,7 @@ client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
 print("Connect server done: ",type(client))
 
 sensor = Adafruit_DHT.DHT22
-pin = 23
+pin = 17
 
 i2c = board.I2C()
 light = adafruit_bh1750.BH1750(i2c)
@@ -37,7 +37,7 @@ def updateServer(temp, humi, light):
   light_point = (
     Point("weather")
     .tag("weather", "weather")
-    .field("light", light)
+    .field("light", light.lux)
   )
 
   print("Temperature: ",temp," Humidity: ",humi)
@@ -48,6 +48,7 @@ def updateServer(temp, humi, light):
 print("Push data form Pi to server")  
 while 1:
   _humi, _temp = Adafruit_DHT.read_retry(sensor, pin)
+  print("Light: %.2f Lux"%sensor.lux)
 
   if _humi is not None and _temp is not None:
     print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(_humi, _temp))
