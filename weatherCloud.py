@@ -1,4 +1,4 @@
-import Adafruit_DHT, adafruit_bh1750
+import adafruit_dht, adafruit_bh1750
 import influxdb_client, os, time, random, board
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -12,8 +12,7 @@ client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
 
 print("Connect server done: ",type(client))
 
-sensor = Adafruit_DHT.DHT22
-pin = 17
+dhtDevice = adafruit_dht.DHT11(board.D17)
 
 i2c = board.I2C()
 light = adafruit_bh1750.BH1750(i2c)
@@ -47,7 +46,8 @@ def updateServer(temp, humi, light):
 
 print("Push data form Pi to server")  
 while 1:
-  _humi, _temp = Adafruit_DHT.read_retry(sensor, pin)
+  _humi = dhtDevice.humidity
+  _temp = dhtDevice.temperature
   print("Light: %.2f Lux"%sensor.lux)
 
   if _humi is not None and _temp is not None:
