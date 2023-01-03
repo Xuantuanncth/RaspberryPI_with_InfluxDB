@@ -1,5 +1,5 @@
-import Adafruit_DHT
-import influxdb_client, os, time, random
+import Adafruit_DHT, adafruit_bh1750
+import influxdb_client, os, time, random, board
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
@@ -15,10 +15,13 @@ print("Connect server done: ",type(client))
 sensor = Adafruit_DHT.DHT22
 pin = 23
 
+i2c = board.I2C()
+light = adafruit_bh1750.BH1750(i2c)
+
 bucket="weather_data"
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
-def updateServer(temp, humi):
+def updateServer(temp, humi, light):
   temperature_point = (
     Point("weather")
     .tag("weather", "weather")
@@ -31,9 +34,16 @@ def updateServer(temp, humi):
     .field("humidity", humi)
   )
 
+  light_point = (
+    Point("weather")
+    .tag("weather", "weather")
+    .field("light", light)
+  )
+
   print("Temperature: ",temp," Humidity: ",humi)
   write_api.write(bucket=bucket, org=org, record=temperature_point)
   write_api.write(bucket=bucket, org=org, record=humidity_point)
+  write_api.write(bucket=bucket, org=org, record=light_point)
 
 print("Push data form Pi to server")  
 while 1:
@@ -41,7 +51,7 @@ while 1:
 
   if _humi is not None and _temp is not None:
     print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(_humi, _temp))
-    updateServer(_temp,_humi)
+    updateServer(_temp,_humi,light)
   else:
     print('Failed to get reading. Try again!')
 
