@@ -10,6 +10,9 @@ url = "https://europe-west1-1.gcp.cloud2.influxdata.com"
 
 client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
 
+bucket="weather_data"
+write_api = client.write_api(write_options=SYNCHRONOUS)
+
 print("Connect server done: ",type(client))
 
 dhtDevice = adafruit_dht.DHT11(board.D17)
@@ -17,8 +20,6 @@ dhtDevice = adafruit_dht.DHT11(board.D17)
 i2c = board.I2C()
 light = adafruit_bh1750.BH1750(i2c)
 
-bucket="weather_data"
-write_api = client.write_api(write_options=SYNCHRONOUS)
 
 def updateServer(temp, humi, light):
   temperature_point = (
@@ -36,7 +37,7 @@ def updateServer(temp, humi, light):
   light_point = (
     Point("weather")
     .tag("weather", "weather")
-    .field("light", light.lux)
+    .field("light", light)
   )
 
   print("Temperature: ",temp," Humidity: ",humi)
@@ -48,11 +49,11 @@ print("Push data form Pi to server")
 while 1:
   _humi = dhtDevice.humidity
   _temp = dhtDevice.temperature
-  print("Light: %.2f Lux"%sensor.lux)
+  print("Light: %.2f Lux"%light.lux)
 
   if _humi is not None and _temp is not None:
     print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(_humi, _temp))
-    updateServer(_temp,_humi,light)
+    updateServer(_temp,_humi,light.lux)
   else:
     print('Failed to get reading. Try again!')
 
