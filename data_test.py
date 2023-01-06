@@ -35,11 +35,11 @@ for value in range(1000):
 
   light_point = (
     Point("weather")
-    .tag("weather", "weather")
+    .tag("light", "light")
     .field("light", light)
   )
 
-  print("Temperature: ",temp," Humidity: ",humi)
+  print("Temperature: ",temp," Humidity: ",humi, "light: ",light)
   write_api.write(bucket=bucket, org=org, record=temperature_point)
   write_api.write(bucket=bucket, org=org, record=humidity_point)
   write_api.write(bucket=bucket, org=org, record=light_point)
